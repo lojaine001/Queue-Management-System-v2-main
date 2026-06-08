@@ -12,10 +12,12 @@
     "expo": "~54.0.0",
     "expo-asset": "~11.0.5",
     "expo-status-bar": "~2.1.0",
-    "react": "19.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "react-native": "0.78.3",
     "react-native-svg": "15.12.1",
-    "victory-native": "^36.9.2"
+    "react-native-web": "^0.21.2",
+    "victory-native": "^35.5.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
