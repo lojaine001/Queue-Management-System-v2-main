@@ -25,6 +25,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": ["./plugins/withFixBundleCompression"],
     "extra": {
       "eas": {
         "projectId": "e1c09cd8-80ca-4060-9f6a-c4c5dc768b1a"
