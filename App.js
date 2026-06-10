@@ -476,7 +476,16 @@ function ForecastScreen() {
             <TouchableOpacity
               key={sc.lanes}
               style={[s.scenarioRow, isActive && s.scenarioRowActive]}
-              onPress={() => setOpenLanes(sc.lanes)}
+              onPress={async () => {
+                setOpenLanes(sc.lanes);
+                try {
+                  await fetch(`${API_URL}/set-lanes`, {
+                    method: 'POST',
+                    headers: { ...H, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lanes: sc.lanes }),
+                  });
+                } catch {}
+              }}
               activeOpacity={0.75}
             >
               <View style={[s.scenarioLaneBox, isActive && { backgroundColor: C.accent }]}>
