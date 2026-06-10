@@ -313,7 +313,6 @@ function ForecastScreen() {
     `${API_URL}/forecast-chart`,
   ]);
   const [forecastData, chartData] = data;
-  const [openLanes, setOpenLanes] = useState(null);
 
   if (loading) return <Loader />;
 
@@ -322,8 +321,7 @@ function ForecastScreen() {
   const wait5       = forecastData?.wait_5_min;
   const wait10      = forecastData?.wait_10_min;
   const wait15      = forecastData?.wait_15_min;
-  const curLanes    = forecastData?.current_lanes || 1;
-  const activeLanes = openLanes ?? curLanes;
+  const activeLanes = forecastData?.current_lanes || 1;
   const slots       = chartData?.slots || [];
 
   const waitColor = (w) => {
@@ -477,13 +475,13 @@ function ForecastScreen() {
               key={sc.lanes}
               style={[s.scenarioRow, isActive && s.scenarioRowActive]}
               onPress={async () => {
-                setOpenLanes(sc.lanes);
                 try {
                   await fetch(`${API_URL}/set-lanes`, {
                     method: 'POST',
                     headers: { ...H, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ lanes: sc.lanes }),
                   });
+                  refresh();
                 } catch {}
               }}
               activeOpacity={0.75}
