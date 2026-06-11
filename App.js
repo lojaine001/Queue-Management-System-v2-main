@@ -175,16 +175,14 @@ export default function App() {
 
 // ── Live Screen ───────────────────────────────────────────────────────────────
 function LiveScreen() {
-  const [snapTime, setSnapTime] = useState(Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setSnapTime(Date.now()), 60000);
-    return () => clearInterval(id);
-  }, []);
-
   const { data, loading, error, refreshing, refresh } = useApi([
     `${API_URL}/live-lanes`,
     `${API_URL}/alerts`,
   ]);
+  const { data: snapData } = useApi([
+    `${API_URL}/snapshot/checkout`,
+    `${API_URL}/snapshot/entrance`,
+  ], 60000);
   const [lanesData, alertData] = data;
 
   if (loading) return <Loader />;
@@ -315,16 +313,14 @@ function LiveScreen() {
       </View>
       <View style={s.cameraRow}>
         {[
-          { label: 'CHECKOUT',  key: 'checkout' },
-          { label: 'ENTRANCE',  key: 'entrance'  },
+          { label: 'CHECKOUT', img: snapData?.[0]?.image },
+          { label: 'ENTRANCE', img: snapData?.[1]?.image },
         ].map(cam => (
-          <View key={cam.key} style={[s.cameraCard, { borderColor: C.border }]}>
+          <View key={cam.label} style={[s.cameraCard, { borderColor: C.border }]}>
             <Text style={s.cameraLabel}>{cam.label}</Text>
-            <Image
-              source={{ uri: `${API_URL}/snapshot/${cam.key}?ngrok-skip-browser-warning=1&t=${snapTime}` }}
-              style={s.cameraImage}
-              resizeMode="cover"
-            />
+            {cam.img
+              ? <Image source={{ uri: cam.img }} style={s.cameraImage} resizeMode="cover" />
+              : <View style={s.cameraImage} />}
           </View>
         ))}
       </View>
@@ -879,7 +875,7 @@ const s = StyleSheet.create({
   cameraRow:   { flexDirection: 'row', gap: 10, marginBottom: 4 },
   cameraCard:  { flex: 1, backgroundColor: C.surface, borderRadius: 12, borderWidth: 1, overflow: 'hidden' },
   cameraLabel: { fontSize: 9, fontWeight: '700', color: C.textSub, letterSpacing: 0.8, padding: 8, paddingBottom: 4 },
-  cameraImage: { width: '100%', aspectRatio: 4/3, backgroundColor: C.surface2 },
+  cameraImage: { width: '100%', height: 140, backgroundColor: C.surface2 },
 
   // Horizon toggle
   horizonToggle:        { flexDirection: 'row', gap: 4 },
