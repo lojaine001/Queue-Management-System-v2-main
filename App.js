@@ -308,11 +308,13 @@ function LiveScreen() {
 
 // ── Forecast Screen ───────────────────────────────────────────────────────────
 function ForecastScreen() {
+  const [chartHorizon, setChartHorizon] = useState('60min');
   const { data, loading, error, refreshing, refresh } = useApi([
     `${API_URL}/forecast`,
     `${API_URL}/forecast-chart`,
+    `${API_URL}/forecast-chart-3h`,
   ]);
-  const [forecastData, chartData] = data;
+  const [forecastData, chartData, chartData3h] = data;
 
   if (loading) return <Loader />;
 
@@ -322,7 +324,9 @@ function ForecastScreen() {
   const wait10      = forecastData?.wait_10_min;
   const wait15      = forecastData?.wait_15_min;
   const activeLanes = forecastData?.current_lanes || 1;
-  const slots       = chartData?.slots || [];
+  const slots        = chartData?.slots   || [];
+  const slots3h      = chartData3h?.slots || [];
+  const activeSlots  = chartHorizon === '3h' ? slots3h : slots;
 
   const waitColor = (w) => {
     if (w == null) return C.textSub;
@@ -340,8 +344,8 @@ function ForecastScreen() {
   const peakWait = allWaits.length ? Math.max(...allWaits) : null;
 
   // Chart data
-  const waitLine     = slots.map((sl, i) => ({ x: i, y: sl.wait_min }));
-  const arrivalsLine = slots.map((sl, i) => ({ x: i, y: sl.arrivals }));
+  const waitLine     = activeSlots.map((sl, i) => ({ x: i, y: sl.wait_min }));
+  const arrivalsLine = activeSlots.map((sl, i) => ({ x: i, y: sl.arrivals }));
   const chartW       = Dimensions.get('window').width - 28;
 
   return (
@@ -405,13 +409,27 @@ function ForecastScreen() {
         ))}
       </View>
 
-      {/* 60-min chart */}
-      {slots.length > 2 && (
+      {/* Chart with horizon toggle */}
+      {(slots.length > 2 || slots3h.length > 2) && (
         <>
           <View style={[s.sectionRow, { marginTop: 10 }]}>
             <View style={[s.sectionDot, { backgroundColor: C.accent }]} />
-            <Text style={s.sectionLabel}>60-MIN OUTLOOK</Text>
-            <View style={s.chartLegend}>
+            <Text style={s.sectionLabel}>{chartHorizon === '3h' ? '3-HOUR OUTLOOK' : '60-MIN OUTLOOK'}</Text>
+            <View style={s.horizonToggle}>
+              {['60min', '3h'].map(h => (
+                <TouchableOpacity
+                  key={h}
+                  style={[s.horizonBtn, chartHorizon === h && s.horizonBtnActive]}
+                  onPress={() => setChartHorizon(h)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[s.horizonBtnText, chartHorizon === h && s.horizonBtnTextActive]}>
+                    {h === '60min' ? '60m' : '3h'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={[s.chartLegend, { marginLeft: 8 }]}>
               <View style={[s.legendDot, { backgroundColor: C.orange }]} />
               <Text style={s.legendTxt}>Wait</Text>
               <View style={[s.legendDot, { backgroundColor: C.blue, marginLeft: 8 }]} />
@@ -428,7 +446,7 @@ function ForecastScreen() {
             >
               <VictoryAxis
                 tickCount={5}
-                tickFormat={(i) => slots[Math.round(i)]?.time ?? ''}
+                tickFormat={(i) => activeSlots[Math.round(i)]?.time ?? ''}
                 style={{
                   axis: { stroke: C.border },
                   tickLabels: { fill: C.textDim, fontSize: 9 },
@@ -828,6 +846,14 @@ const s = StyleSheet.create({
   chartLegend:    { flexDirection: 'row', alignItems: 'center', gap: 4 },
   legendDot:      { width: 7, height: 7, borderRadius: 4 },
   legendTxt:      { fontSize: 10, color: C.textDim },
+
+  // Horizon toggle
+  horizonToggle:        { flexDirection: 'row', gap: 4 },
+  horizonBtn:           { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
+                          backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border },
+  horizonBtnActive:     { backgroundColor: C.accent, borderColor: C.accent },
+  horizonBtnText:       { fontSize: 10, fontWeight: '600', color: C.textSub },
+  horizonBtnTextActive: { color: '#fff' },
 
   // Lane scenarios
   scenariosCard:  { backgroundColor: C.surface, borderRadius: 12, padding: 14, borderWidth: 1, marginBottom: 4 },
