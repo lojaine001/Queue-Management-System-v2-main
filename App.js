@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   StyleSheet, Text, View, ScrollView, TouchableOpacity,
-  RefreshControl, StatusBar, ActivityIndicator, SafeAreaView, Dimensions,
+  RefreshControl, StatusBar, ActivityIndicator, SafeAreaView, Dimensions, Image,
 } from 'react-native';
 import { VictoryChart, VictoryLine, VictoryAxis, VictoryArea, VictoryTheme, VictoryPie, VictoryBar } from 'victory-native';
 
@@ -175,6 +175,12 @@ export default function App() {
 
 // ── Live Screen ───────────────────────────────────────────────────────────────
 function LiveScreen() {
+  const [snapTime, setSnapTime] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setSnapTime(Date.now()), 60000);
+    return () => clearInterval(id);
+  }, []);
+
   const { data, loading, error, refreshing, refresh } = useApi([
     `${API_URL}/live-lanes`,
     `${API_URL}/alerts`,
@@ -299,6 +305,28 @@ function LiveScreen() {
           <Text style={s.snapshotLbl}>AVG WAIT</Text>
           <Text style={s.snapshotSub}>min</Text>
         </View>
+      </View>
+
+      {/* Camera snapshots */}
+      <View style={[s.sectionRow, { marginTop: 8 }]}>
+        <View style={[s.sectionDot, { backgroundColor: C.textDim }]} />
+        <Text style={s.sectionLabel}>LIVE CAMERAS</Text>
+        <Text style={s.sectionRight}>updates every 60s</Text>
+      </View>
+      <View style={s.cameraRow}>
+        {[
+          { label: 'CHECKOUT',  key: 'checkout' },
+          { label: 'ENTRANCE',  key: 'entrance'  },
+        ].map(cam => (
+          <View key={cam.key} style={[s.cameraCard, { borderColor: C.border }]}>
+            <Text style={s.cameraLabel}>{cam.label}</Text>
+            <Image
+              source={{ uri: `${API_URL}/snapshot/${cam.key}?ngrok-skip-browser-warning=1&t=${snapTime}` }}
+              style={s.cameraImage}
+              resizeMode="cover"
+            />
+          </View>
+        ))}
       </View>
 
       <View style={s.spacer} />
@@ -846,6 +874,12 @@ const s = StyleSheet.create({
   chartLegend:    { flexDirection: 'row', alignItems: 'center', gap: 4 },
   legendDot:      { width: 7, height: 7, borderRadius: 4 },
   legendTxt:      { fontSize: 10, color: C.textDim },
+
+  // Camera snapshots
+  cameraRow:   { flexDirection: 'row', gap: 10, marginBottom: 4 },
+  cameraCard:  { flex: 1, backgroundColor: C.surface, borderRadius: 12, borderWidth: 1, overflow: 'hidden' },
+  cameraLabel: { fontSize: 9, fontWeight: '700', color: C.textSub, letterSpacing: 0.8, padding: 8, paddingBottom: 4 },
+  cameraImage: { width: '100%', aspectRatio: 4/3, backgroundColor: C.surface2 },
 
   // Horizon toggle
   horizonToggle:        { flexDirection: 'row', gap: 4 },
