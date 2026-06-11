@@ -319,7 +319,7 @@ function LiveScreen() {
           <View key={cam.label} style={[s.cameraCard, { borderColor: C.border }]}>
             <Text style={s.cameraLabel}>{cam.label}</Text>
             {cam.img
-              ? <Image source={{ uri: cam.img }} style={s.cameraImage} resizeMode="cover" />
+              ? <Image source={{ uri: cam.img }} style={s.cameraImage} resizeMode="contain" />
               : <View style={s.cameraImage} />}
           </View>
         ))}
@@ -875,7 +875,7 @@ const s = StyleSheet.create({
   cameraRow:   { flexDirection: 'row', gap: 10, marginBottom: 4 },
   cameraCard:  { flex: 1, backgroundColor: C.surface, borderRadius: 12, borderWidth: 1, overflow: 'hidden' },
   cameraLabel: { fontSize: 9, fontWeight: '700', color: C.textSub, letterSpacing: 0.8, padding: 8, paddingBottom: 4 },
-  cameraImage: { width: '100%', height: 140, backgroundColor: C.surface2 },
+  cameraImage: { width: '100%', height: 200, backgroundColor: C.surface2 },
 
   // Horizon toggle
   horizonToggle:        { flexDirection: 'row', gap: 4 },
