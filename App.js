@@ -585,12 +585,20 @@ function TodayScreen() {
       <View style={[s.summaryCard, { borderColor: C.border }]}>
         {[
           { label: 'TOTAL CUSTOMERS', value: recap?.total_customers?.toLocaleString(), color: C.cyan,   big: true  },
-          { label: 'AVG DWELL',        value: fmtMin(recap?.avg_wait_min),              color: C.text,   big: false,
+          { label: 'AVG CHECKOUT',     value: fmtMin(recap?.avg_wait_min),              color: C.text,   big: false,
             suffix: 'min' },
           { label: 'BUSIEST HOUR',
             value: recap?.peak_hour ? `${recap.peak_hour}` : '—',
             extra: recap?.peak_hour_end ? `– ${recap.peak_hour_end} · ${recap.peak_count}` : '',
             color: C.text, big: false },
+          { label: 'LANES USED',
+            value: recap?.lanes_today != null ? `${recap.lanes_today}` : '—',
+            extra: recap?.busiest_lane ? `busiest: ${recap.busiest_lane}` : '',
+            color: C.text, big: false },
+          { label: 'ALERT TIME',
+            value: recap?.alert_minutes != null ? `${recap.alert_minutes}` : '—',
+            suffix: 'min',
+            color: recap?.alert_minutes > 0 ? C.red : C.text, big: false },
         ].map((item, i, arr) => (
           <View key={item.label}>
             <View style={s.summaryRow_}>
@@ -615,12 +623,12 @@ function TodayScreen() {
       </View>
 
       <View style={[s.equipCard, { borderColor: C.border }]}>
-        {equipment.map((eq, i) => (
+        {equipment.filter(eq => eq.type !== 'personal_bag').map((eq, i, arr) => (
           <View key={eq.type}>
             <View style={s.equipRow}>
               <View style={[s.equipIcon, { backgroundColor: eq.color + '22' }]}>
                 <Text style={{ fontSize: 16 }}>
-                  {eq.type === 'trolley' ? '🛒' : eq.type === 'store_basket' ? '🧺' : '👜'}
+                  {eq.type === 'trolley' ? '🛒' : '🧺'}
                 </Text>
               </View>
               <View style={{ flex: 1 }}>
@@ -634,7 +642,7 @@ function TodayScreen() {
                 <Text style={s.equipCount}>{eq.count.toLocaleString()} customers</Text>
               </View>
             </View>
-            {i < equipment.length - 1 && <View style={[s.divider, { backgroundColor: C.border }]} />}
+            {i < arr.length - 1 && <View style={[s.divider, { backgroundColor: C.border }]} />}
           </View>
         ))}
         {equipment.length === 0 && (
