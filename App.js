@@ -86,6 +86,100 @@ function useApi(urls, interval = REFRESH_MS) {
   return { data, loading, error, refreshing, refresh };
 }
 
+// ── Translations ─────────────────────────────────────────────────────────────
+const T = {
+  en: {
+    storeName: 'Queue Manager',
+    tabs: { live: 'Live', forecast: 'Forecast', today: 'Today' },
+    storeClosed: 'Store closed',
+    opensIn: 'Opens in',
+    lastSession: 'Data from last session',
+    // Live
+    liveQueueStatus: 'LIVE QUEUE STATUS', updatesEvery15s: 'updates every 15s',
+    lane: 'LANE', waiting: 'WAITING', closed: 'CLOSED', fill: 'FILL', avg: 'avg',
+    snapshot: 'SNAPSHOT', nowChip: 'now',
+    inQueue: 'IN QUEUE', acrossLanes: n => `across ${n} open lane${n !== 1 ? 's' : ''}`,
+    avgWait: 'AVG WAIT', min: 'min',
+    liveCameras: 'LIVE CAMERAS', updatesEvery60s: 'updates every 60s',
+    checkout: 'CHECKOUT', entrance: 'ENTRANCE',
+    openBtn: 'OPEN', cannotOpen: 'Cannot Open', falseAlarm: 'False Alarm',
+    // Forecast
+    forecast15min: '15-MIN FORECAST', nowLabel: 'NOW',
+    recOptimal: 'Queue conditions are optimal',
+    recOpenMore: (n, saved) => `Open ${n} more lane${n > 1 ? 's' : ''} — saves ~${saved} min wait`,
+    recHighDemand: 'High demand — all available lanes recommended',
+    recLight: n => `Queue is light — ${n} lane${n > 1 ? 's' : ''} would still keep wait under 5 min`,
+    forecastDetail: 'FORECAST DETAIL',
+    nextSlot: 'NEXT SLOT', currentTimeWindow: 'Current time window',
+    peakWait: 'PEAK WAIT', highestIn15min: 'Highest in 15 min',
+    windowEnd: 'WINDOW END', endOf15min: 'End of 15-min view',
+    statusSection: 'STATUS',
+    trend: 'TREND', waitOver15min: 'Wait over 15 min',
+    trendRising: '↑ Rising', trendStable: '→ Stable', trendEasing: '↓ Easing',
+    inQueueLabel: 'IN QUEUE', peopleRightNow: 'People right now',
+    dataAge: 'DATA AGE', lastDashboardUpdate: 'Last dashboard update',
+    justNow: 'just now', minAgo: n => `${n} min ago`,
+    outlook60min: '60-MIN OUTLOOK', outlook3h: '3-HOUR OUTLOOK',
+    waitLegend: 'Wait', arrivalsLegend: 'Arrivals', alertLegend: 'Alert',
+    laneScenarios: 'LANE SCENARIOS', tapToSetLanes: 'tap to set open lanes',
+    laneLabel: n => `${n} lane${n > 1 ? 's' : ''}`, openBadge: 'OPEN',
+    // Today
+    summary: 'SUMMARY', totalCustomers: 'TOTAL CUSTOMERS',
+    avgCheckout: 'AVG CHECKOUT', busiestHour: 'BUSIEST HOUR',
+    lanesUsed: 'LANES USED', busiestLane: id => `busiest: ${id}`,
+    alertTime: 'ALERT TIME', equipmentMix: 'EQUIPMENT MIX',
+    equipLabel: { trolley: 'Trolley', store_basket: 'Store basket' },
+    customers: n => `${n} customers`, noEquipData: 'No equipment data yet today',
+    demographics: 'CUSTOMER DEMOGRAPHICS', ageGroups: 'AGE GROUPS',
+    entriesByHour: 'ENTRIES BY HOUR', trafficPattern: 'traffic pattern',
+  },
+  fr: {
+    storeName: 'Gestion File',
+    tabs: { live: 'En direct', forecast: 'Prévision', today: "Aujourd'hui" },
+    storeClosed: 'Magasin fermé',
+    opensIn: 'Ouvre dans',
+    lastSession: 'Données de la dernière session',
+    // Live
+    liveQueueStatus: 'ÉTAT FILE EN DIRECT', updatesEvery15s: 'mise à jour toutes les 15s',
+    lane: 'FILE', waiting: 'EN ATTENTE', closed: 'FERMÉ', fill: 'REMPLISSAGE', avg: 'moy',
+    snapshot: 'APERÇU', nowChip: 'maintenant',
+    inQueue: 'EN FILE', acrossLanes: n => `sur ${n} file${n !== 1 ? 's' : ''} ouverte${n !== 1 ? 's' : ''}`,
+    avgWait: 'ATTENTE MOY.', min: 'min',
+    liveCameras: 'CAMÉRAS EN DIRECT', updatesEvery60s: 'mise à jour toutes les 60s',
+    checkout: 'CAISSE', entrance: 'ENTRÉE',
+    openBtn: 'OUVRIR', cannotOpen: "Impossible d'ouvrir", falseAlarm: 'Fausse alarme',
+    // Forecast
+    forecast15min: 'PRÉVISION 15 MIN', nowLabel: 'MAINTENANT',
+    recOptimal: 'Conditions de file optimales',
+    recOpenMore: (n, saved) => `Ouvrir ${n} file${n > 1 ? 's' : ''} de plus — économise ~${saved} min`,
+    recHighDemand: 'Forte demande — toutes les files disponibles recommandées',
+    recLight: n => `File légère — ${n} file${n > 1 ? 's' : ''} suffit pour maintenir sous 5 min`,
+    forecastDetail: 'DÉTAIL PRÉVISION',
+    nextSlot: 'PROCHAIN CRÉNEAU', currentTimeWindow: 'Fenêtre de temps actuelle',
+    peakWait: 'ATTENTE MAX', highestIn15min: 'Plus haute en 15 min',
+    windowEnd: 'FIN DE FENÊTRE', endOf15min: 'Fin de la vue 15 min',
+    statusSection: 'STATUT',
+    trend: 'TENDANCE', waitOver15min: 'Attente sur 15 min',
+    trendRising: '↑ En hausse', trendStable: '→ Stable', trendEasing: '↓ En baisse',
+    inQueueLabel: 'EN FILE', peopleRightNow: 'Personnes actuellement',
+    dataAge: 'ÂGE DONNÉES', lastDashboardUpdate: 'Dernière mise à jour',
+    justNow: "à l'instant", minAgo: n => `il y a ${n} min`,
+    outlook60min: 'PRÉVISION 60 MIN', outlook3h: 'PRÉVISION 3H',
+    waitLegend: 'Attente', arrivalsLegend: 'Arrivées', alertLegend: 'Alerte',
+    laneScenarios: 'SCÉNARIOS FILES', tapToSetLanes: 'toucher pour définir',
+    laneLabel: n => `${n} file${n > 1 ? 's' : ''}`, openBadge: 'OUVERT',
+    // Today
+    summary: 'RÉSUMÉ', totalCustomers: 'CLIENTS TOTAL',
+    avgCheckout: 'CAISSE MOY.', busiestHour: 'HEURE DE POINTE',
+    lanesUsed: 'FILES UTILISÉES', busiestLane: id => `la + chargée : ${id}`,
+    alertTime: 'TEMPS EN ALERTE', equipmentMix: 'ÉQUIPEMENT',
+    equipLabel: { trolley: 'Chariot', store_basket: 'Panier' },
+    customers: n => `${n} clients`, noEquipData: "Aucune donnée d'équipement aujourd'hui",
+    demographics: 'DÉMOGRAPHIE CLIENTS', ageGroups: "TRANCHES D'ÂGE",
+    entriesByHour: 'ENTRÉES PAR HEURE', trafficPattern: 'flux de trafic',
+  },
+};
+
 // ── Store hours check (phone local time) ─────────────────────────────────────
 const SHOP_OPEN_MIN  = 8  * 60 + 30;  // 08:30
 const SHOP_CLOSE_MIN = 20 * 60 + 30;  // 20:30
@@ -96,32 +190,35 @@ function isStoreOpen() {
   return tot >= SHOP_OPEN_MIN && tot < SHOP_CLOSE_MIN;
 }
 
-function closedBannerText() {
+function closedBannerText(lang) {
+  const tr = T[lang];
   const now = new Date();
   const tot = now.getHours() * 60 + now.getMinutes();
   if (tot < SHOP_OPEN_MIN) {
     const diff = SHOP_OPEN_MIN - tot;
     const h = Math.floor(diff / 60), m = diff % 60;
-    return h > 0 ? `Store closed · Opens in ${h}h ${m.toString().padStart(2,'0')}m` : `Store closed · Opens in ${m} min`;
+    return h > 0 ? `${tr.storeClosed} · ${tr.opensIn} ${h}h ${m.toString().padStart(2,'0')}m`
+                 : `${tr.storeClosed} · ${tr.opensIn} ${m} min`;
   }
-  return 'Store closed · Data from last session';
+  return `${tr.storeClosed} · ${tr.lastSession}`;
 }
 
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function App() {
-  const [tab, setTab] = useState('forecast');
+  const [tab, setTab]   = useState('forecast');
+  const [lang, setLang] = useState('en');
   const [time, setTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   const [storeOpen, setStoreOpen] = useState(isStoreOpen());
-  const [closedText, setClosedText] = useState(closedBannerText());
 
   useEffect(() => {
     const id = setInterval(() => {
       setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       setStoreOpen(isStoreOpen());
-      setClosedText(closedBannerText());
     }, 30000);
     return () => clearInterval(id);
   }, []);
+
+  const tr = T[lang];
 
   return (
     <SafeAreaView style={s.root}>
@@ -133,11 +230,21 @@ export default function App() {
           <View style={s.logoChip}>
             <Text style={s.logoText}>IQMS</Text>
           </View>
-          <Text style={s.storeName}>Queue Manager</Text>
+          <Text style={s.storeName}>{tr.storeName}</Text>
         </View>
-        <View style={s.liveChip}>
-          <View style={s.liveDot} />
-          <Text style={s.liveText}>{time}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={s.langToggle}>
+            {['en', 'fr'].map(l => (
+              <TouchableOpacity key={l} onPress={() => setLang(l)} activeOpacity={0.75}
+                style={[s.langBtn, lang === l && s.langBtnActive]}>
+                <Text style={s.langFlag}>{l === 'en' ? '🇬🇧' : '🇫🇷'}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <View style={s.liveChip}>
+            <View style={s.liveDot} />
+            <Text style={s.liveText}>{time}</Text>
+          </View>
         </View>
       </View>
 
@@ -151,7 +258,7 @@ export default function App() {
             activeOpacity={0.8}
           >
             <Text style={[s.tabText, tab === t && s.tabTextActive]}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
+              {tr.tabs[t]}
             </Text>
           </TouchableOpacity>
         ))}
@@ -161,20 +268,21 @@ export default function App() {
       {!storeOpen && (
         <View style={s.closedBanner}>
           <Text style={s.closedIcon}>🔒</Text>
-          <Text style={s.closedText}>{closedText}</Text>
+          <Text style={s.closedText}>{closedBannerText(lang)}</Text>
         </View>
       )}
 
       {/* ── Screens ────────────────────────────────────────────────────────── */}
-      {tab === 'live'     && <LiveScreen />}
-      {tab === 'forecast' && <ForecastScreen />}
-      {tab === 'today'    && <TodayScreen />}
+      {tab === 'live'     && <LiveScreen lang={lang} />}
+      {tab === 'forecast' && <ForecastScreen lang={lang} />}
+      {tab === 'today'    && <TodayScreen lang={lang} />}
     </SafeAreaView>
   );
 }
 
 // ── Live Screen ───────────────────────────────────────────────────────────────
-function LiveScreen() {
+function LiveScreen({ lang }) {
+  const tr = T[lang];
   const { data, loading, error, refreshing, refresh } = useApi([
     `${API_URL}/live-lanes`,
     `${API_URL}/alerts`,
@@ -227,13 +335,13 @@ function LiveScreen() {
               onPress={() => sendResponse('opening_lane')}
               activeOpacity={0.8}
             >
-              <Text style={s.openBtnText}>OPEN</Text>
+              <Text style={s.openBtnText}>{tr.openBtn}</Text>
             </TouchableOpacity>
           </View>
           <View style={s.alertBtnRow}>
             {[
-              { key: 'cannot_open', label: 'Cannot Open' },
-              { key: 'false_alarm', label: 'False Alarm' },
+              { key: 'cannot_open', label: tr.cannotOpen },
+              { key: 'false_alarm', label: tr.falseAlarm },
             ].map(b => (
               <TouchableOpacity key={b.key} style={s.alertSecondBtn} onPress={() => sendResponse(b.key)} activeOpacity={0.8}>
                 <Text style={s.alertSecondBtnText}>{b.label}</Text>
@@ -246,8 +354,8 @@ function LiveScreen() {
       {/* Section Label */}
       <View style={s.sectionRow}>
         <View style={[s.sectionDot, { backgroundColor: C.green }]} />
-        <Text style={s.sectionLabel}>LIVE QUEUE STATUS</Text>
-        <Text style={s.sectionRight}>updates every 15s</Text>
+        <Text style={s.sectionLabel}>{tr.liveQueueStatus}</Text>
+        <Text style={s.sectionRight}>{tr.updatesEvery15s}</Text>
       </View>
 
       {/* Lane Cards */}
@@ -257,13 +365,13 @@ function LiveScreen() {
         return (
           <View key={lane.lane_number} style={[s.laneCard, { backgroundColor: ls.bg, borderColor: ls.color + '44' }]}>
             <View style={s.laneCardTop}>
-              <Text style={s.laneNumber}>LANE {String(lane.lane_number).padStart(2, '0')}</Text>
+              <Text style={s.laneNumber}>{tr.lane} {String(lane.lane_number).padStart(2, '0')}</Text>
               <View style={[s.statusBadge, { backgroundColor: ls.color + '22', borderColor: ls.color }]}>
                 <View style={[s.statusDot2, { backgroundColor: ls.color }]} />
                 <Text style={[s.statusBadgeText, { color: ls.color }]}>{ls.label}</Text>
               </View>
               <Text style={[s.laneAvg, { color: ls.color }]}>
-                avg {lane.status === 'closed' ? '—' : fmtMin(lane.avg_wait_min)}
+                {tr.avg} {lane.status === 'closed' ? '—' : fmtMin(lane.avg_wait_min)}
               </Text>
             </View>
 
@@ -271,14 +379,14 @@ function LiveScreen() {
               <Text style={[s.waitingNum, { color: ls.color }]}>
                 {lane.status === 'closed' ? '—' : lane.waiting}
               </Text>
-              <Text style={s.waitingLabel}>WAITING</Text>
+              <Text style={s.waitingLabel}>{tr.waiting}</Text>
 
               <View style={s.fillSection}>
                 <View style={s.fillBarBg}>
                   <View style={[s.fillBarFg, { width: `${fillPct}%`, backgroundColor: ls.color }]} />
                 </View>
                 <Text style={s.fillLabel}>
-                  {lane.status === 'closed' ? 'CLOSED' : `FILL   ${lane.fill} / ${lane.fill_max}`}
+                  {lane.status === 'closed' ? tr.closed : `${tr.fill}   ${lane.fill} / ${lane.fill_max}`}
                 </Text>
               </View>
             </View>
@@ -289,33 +397,33 @@ function LiveScreen() {
       {/* Snapshot */}
       <View style={s.sectionRow}>
         <View style={[s.sectionDot, { backgroundColor: C.purple }]} />
-        <Text style={s.sectionLabel}>SNAPSHOT</Text>
-        <Text style={s.sectionRight}>now</Text>
+        <Text style={s.sectionLabel}>{tr.snapshot}</Text>
+        <Text style={s.sectionRight}>{tr.nowChip}</Text>
       </View>
 
       <View style={s.snapshotRow}>
         <View style={[s.snapshotCard, { borderColor: C.border }]}>
           <Text style={s.snapshotVal}>{fmt(snapshot.total_in_queue)}</Text>
-          <Text style={s.snapshotLbl}>IN QUEUE</Text>
-          <Text style={s.snapshotSub}>across {snapshot.open_lanes || 0} open lanes</Text>
+          <Text style={s.snapshotLbl}>{tr.inQueue}</Text>
+          <Text style={s.snapshotSub}>{tr.acrossLanes(snapshot.open_lanes || 0)}</Text>
         </View>
         <View style={[s.snapshotCard, { borderColor: C.border }]}>
           <Text style={[s.snapshotVal, { color: C.yellow }]}>{fmtMin(snapshot.avg_wait_min)}</Text>
-          <Text style={s.snapshotLbl}>AVG WAIT</Text>
-          <Text style={s.snapshotSub}>min</Text>
+          <Text style={s.snapshotLbl}>{tr.avgWait}</Text>
+          <Text style={s.snapshotSub}>{tr.min}</Text>
         </View>
       </View>
 
       {/* Camera snapshots */}
       <View style={[s.sectionRow, { marginTop: 8 }]}>
         <View style={[s.sectionDot, { backgroundColor: C.textDim }]} />
-        <Text style={s.sectionLabel}>LIVE CAMERAS</Text>
-        <Text style={s.sectionRight}>updates every 60s</Text>
+        <Text style={s.sectionLabel}>{tr.liveCameras}</Text>
+        <Text style={s.sectionRight}>{tr.updatesEvery60s}</Text>
       </View>
       <View style={s.cameraRow}>
         {[
-          { label: 'CHECKOUT', img: snapData?.[0]?.image },
-          { label: 'ENTRANCE', img: snapData?.[1]?.image },
+          { label: tr.checkout, img: snapData?.[0]?.image },
+          { label: tr.entrance, img: snapData?.[1]?.image },
         ].map(cam => (
           <View key={cam.label} style={[s.cameraCard, { borderColor: C.border }]}>
             <Text style={s.cameraLabel}>{cam.label}</Text>
@@ -332,7 +440,8 @@ function LiveScreen() {
 }
 
 // ── Forecast Screen ───────────────────────────────────────────────────────────
-function ForecastScreen() {
+function ForecastScreen({ lang }) {
+  const tr = T[lang];
   const [chartHorizon, setChartHorizon] = useState('60min');
   const { data, loading, error, refreshing, refresh } = useApi([
     `${API_URL}/forecast`,
@@ -366,7 +475,7 @@ function ForecastScreen() {
   // Trend: compare now vs +15min
   const trendDelta = (waitNow != null && wait15 != null) ? wait15 - waitNow : null;
   const trend = trendDelta == null ? null : trendDelta > 1 ? 'rising' : trendDelta < -1 ? 'easing' : 'stable';
-  const trendLabel = { rising: '↑ Rising', stable: '→ Stable', easing: '↓ Easing' };
+  const trendLabel = { rising: tr.trendRising, stable: tr.trendStable, easing: tr.trendEasing };
   const trendColor = { rising: C.red, stable: C.yellow, easing: C.green };
 
   // Data freshness
@@ -374,8 +483,8 @@ function ForecastScreen() {
     ? Math.round((Date.now() - new Date(updatedAt).getTime()) / 60000)
     : null;
   const dataAgeLabel = dataAgeMin == null ? '—'
-    : dataAgeMin < 1 ? 'just now'
-    : `${dataAgeMin} min ago`;
+    : dataAgeMin < 1 ? tr.justNow
+    : tr.minAgo(dataAgeMin);
   const dataAgeColor = dataAgeMin == null ? C.textSub
     : dataAgeMin > 5 ? C.red
     : dataAgeMin > 2 ? C.yellow
@@ -388,17 +497,17 @@ function ForecastScreen() {
   let recommendation = null;
   let recommendationColor = C.textSub;
   if (currentWait <= 5 && worseScenario) {
-    recommendation = `Queue is light — ${worseScenario.lanes} lane${worseScenario.lanes > 1 ? 's' : ''} would still keep wait under 5 min`;
+    recommendation = tr.recLight(worseScenario.lanes);
     recommendationColor = C.green;
   } else if (currentWait > 5 && betterScenario) {
     const saved = Math.round(currentWait - betterScenario.est_wait_min);
-    recommendation = `Open ${betterScenario.lanes - activeLanes} more lane${betterScenario.lanes - activeLanes > 1 ? 's' : ''} — saves ~${saved} min wait`;
+    recommendation = tr.recOpenMore(betterScenario.lanes - activeLanes, saved);
     recommendationColor = C.orange;
   } else if (currentWait > 10) {
-    recommendation = 'High demand — all available lanes recommended';
+    recommendation = tr.recHighDemand;
     recommendationColor = C.red;
   } else if (currentWait <= 5) {
-    recommendation = 'Queue conditions are optimal';
+    recommendation = tr.recOptimal;
     recommendationColor = C.green;
   }
 
@@ -420,14 +529,14 @@ function ForecastScreen() {
       {/* Forecast header */}
       <View style={s.sectionRow}>
         <View style={[s.sectionDot, { backgroundColor: C.yellow }]} />
-        <Text style={s.sectionLabel}>15-MIN FORECAST</Text>
+        <Text style={s.sectionLabel}>{tr.forecast15min}</Text>
         <Text style={s.sectionRight}></Text>
       </View>
 
       {/* Wait cards NOW / +5 / +10 / +15 */}
       <View style={s.waitCardsRow}>
         {[
-          { label: 'NOW',     value: waitNow },
+          { label: tr.nowLabel, value: waitNow },
           { label: '+5 MIN',  value: wait5   },
           { label: '+10 MIN', value: wait10  },
           { label: '+15 MIN', value: wait15  },
@@ -441,7 +550,7 @@ function ForecastScreen() {
             >
               {fmtMin(card.value)}
             </Text>
-            <Text style={s.waitCardUnit}>min</Text>
+            <Text style={s.waitCardUnit}>{tr.min}</Text>
           </View>
         ))}
       </View>
@@ -456,14 +565,14 @@ function ForecastScreen() {
       {/* Forecast Detail */}
       <View style={[s.sectionRow, { marginTop: 10 }]}>
         <View style={[s.sectionDot, { backgroundColor: C.blue }]} />
-        <Text style={s.sectionLabel}>FORECAST DETAIL</Text>
+        <Text style={s.sectionLabel}>{tr.forecastDetail}</Text>
       </View>
 
       <View style={s.detailRow}>
         {[
-          { label: 'NEXT SLOT',  value: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: 'Current time window' },
-          { label: 'PEAK WAIT',  value: (() => { const all = [waitNow, wait5, wait10, wait15].filter(v => v != null); return all.length ? fmtMin(Math.max(...all)) : '—'; })(), sub: 'Highest in 15 min', color: waitColor(Math.max(...[waitNow, wait5, wait10, wait15].filter(v => v != null))) },
-          { label: 'WINDOW END', value: new Date(Date.now() + 15 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: 'End of 15-min view' },
+          { label: tr.nextSlot,  value: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: tr.currentTimeWindow },
+          { label: tr.peakWait,  value: (() => { const all = [waitNow, wait5, wait10, wait15].filter(v => v != null); return all.length ? fmtMin(Math.max(...all)) : '—'; })(), sub: tr.highestIn15min, color: waitColor(Math.max(...[waitNow, wait5, wait10, wait15].filter(v => v != null))) },
+          { label: tr.windowEnd, value: new Date(Date.now() + 15 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: tr.endOf15min },
         ].map(item => (
           <View key={item.label} style={[s.detailCard, { borderColor: C.border }]}>
             <Text style={s.detailLabel}>{item.label}</Text>
@@ -478,27 +587,27 @@ function ForecastScreen() {
       {/* Status row: TREND / QUEUE NOW / DATA AGE */}
       <View style={[s.sectionRow, { marginTop: 2 }]}>
         <View style={[s.sectionDot, { backgroundColor: C.blue }]} />
-        <Text style={s.sectionLabel}>STATUS</Text>
+        <Text style={s.sectionLabel}>{tr.statusSection}</Text>
       </View>
 
       <View style={s.detailRow}>
         {[
           {
-            label: 'TREND',
+            label: tr.trend,
             value: trend ? trendLabel[trend] : '—',
-            sub:   'Wait over 15 min',
+            sub:   tr.waitOver15min,
             color: trend ? trendColor[trend] : C.textSub,
           },
           {
-            label: 'IN QUEUE',
+            label: tr.inQueueLabel,
             value: queueNow != null ? `${queueNow}` : '—',
-            sub:   'People right now',
+            sub:   tr.peopleRightNow,
             color: C.text,
           },
           {
-            label: 'DATA AGE',
+            label: tr.dataAge,
             value: dataAgeLabel,
-            sub:   'Last dashboard update',
+            sub:   tr.lastDashboardUpdate,
             color: dataAgeColor,
           },
         ].map(item => (
@@ -517,7 +626,7 @@ function ForecastScreen() {
         <>
           <View style={[s.sectionRow, { marginTop: 10 }]}>
             <View style={[s.sectionDot, { backgroundColor: C.accent }]} />
-            <Text style={s.sectionLabel}>{chartHorizon === '3h' ? '3-HOUR OUTLOOK' : '60-MIN OUTLOOK'}</Text>
+            <Text style={s.sectionLabel}>{chartHorizon === '3h' ? tr.outlook3h : tr.outlook60min}</Text>
             <View style={s.horizonToggle}>
               {['60min', '3h'].map(h => (
                 <TouchableOpacity
@@ -534,11 +643,11 @@ function ForecastScreen() {
             </View>
             <View style={[s.chartLegend, { marginLeft: 8 }]}>
               <View style={[s.legendDot, { backgroundColor: C.orange }]} />
-              <Text style={s.legendTxt}>Wait</Text>
+              <Text style={s.legendTxt}>{tr.waitLegend}</Text>
               <View style={[s.legendDot, { backgroundColor: C.blue, marginLeft: 8 }]} />
-              <Text style={s.legendTxt}>Arrivals</Text>
+              <Text style={s.legendTxt}>{tr.arrivalsLegend}</Text>
               <View style={[s.legendDot, { backgroundColor: C.red, marginLeft: 8 }]} />
-              <Text style={s.legendTxt}>Alert</Text>
+              <Text style={s.legendTxt}>{tr.alertLegend}</Text>
             </View>
           </View>
 
@@ -588,8 +697,8 @@ function ForecastScreen() {
       {/* Lane Scenarios — tap to toggle open/closed */}
       <View style={[s.sectionRow, { marginTop: 8 }]}>
         <View style={[s.sectionDot, { backgroundColor: C.green }]} />
-        <Text style={s.sectionLabel}>LANE SCENARIOS</Text>
-        <Text style={s.sectionRight}>tap to set open lanes</Text>
+        <Text style={s.sectionLabel}>{tr.laneScenarios}</Text>
+        <Text style={s.sectionRight}>{tr.tapToSetLanes}</Text>
       </View>
 
       <View style={[s.scenariosCard, { borderColor: C.border }]}>
@@ -615,7 +724,7 @@ function ForecastScreen() {
             >
               <View style={[s.scenarioLaneBox, isActive && { backgroundColor: C.accent }]}>
                 <Text style={[s.scenarioLaneText, isActive && { color: '#fff' }]}>
-                  {sc.lanes} lane{sc.lanes > 1 ? 's' : ''}
+                  {tr.laneLabel(sc.lanes)}
                 </Text>
               </View>
               <View style={s.scenarioBarBg}>
@@ -623,7 +732,7 @@ function ForecastScreen() {
               </View>
               <View style={s.scenarioRight}>
                 <Text style={[s.scenarioWait, { color }]}>{fmtMin(sc.est_wait_min)}</Text>
-                {isActive && <Text style={s.scenarioOpen}>OPEN</Text>}
+                {isActive && <Text style={s.scenarioOpen}>{tr.openBadge}</Text>}
               </View>
             </TouchableOpacity>
           );
@@ -636,7 +745,8 @@ function ForecastScreen() {
 }
 
 // ── Today Screen ──────────────────────────────────────────────────────────────
-function TodayScreen() {
+function TodayScreen({ lang }) {
+  const tr = T[lang];
   const { data, loading, error, refreshing, refresh } = useApi([
     `${API_URL}/day-recap`,
   ]);
@@ -662,26 +772,26 @@ function TodayScreen() {
       {/* Summary */}
       <View style={s.sectionRow}>
         <View style={[s.sectionDot, { backgroundColor: C.blue }]} />
-        <Text style={s.sectionLabel}>SUMMARY</Text>
+        <Text style={s.sectionLabel}>{tr.summary}</Text>
         {recap?.date && <Text style={s.sectionRight}>{recap.date}</Text>}
       </View>
 
       <View style={[s.summaryCard, { borderColor: C.border }]}>
         {[
-          { label: 'TOTAL CUSTOMERS', value: recap?.total_customers?.toLocaleString(), color: C.cyan,   big: true  },
-          { label: 'AVG CHECKOUT',     value: fmtMin(recap?.avg_wait_min),              color: C.text,   big: false,
-            suffix: 'min' },
-          { label: 'BUSIEST HOUR',
+          { label: tr.totalCustomers, value: recap?.total_customers?.toLocaleString(), color: C.cyan,   big: true  },
+          { label: tr.avgCheckout,    value: fmtMin(recap?.avg_wait_min),              color: C.text,   big: false,
+            suffix: tr.min },
+          { label: tr.busiestHour,
             value: recap?.peak_hour ? `${recap.peak_hour}` : '—',
             extra: recap?.peak_hour_end ? `– ${recap.peak_hour_end} · ${recap.peak_count}` : '',
             color: C.text, big: false },
-          { label: 'LANES USED',
+          { label: tr.lanesUsed,
             value: recap?.lanes_today != null ? `${recap.lanes_today}` : '—',
-            extra: recap?.busiest_lane ? `busiest: ${recap.busiest_lane}` : '',
+            extra: recap?.busiest_lane ? tr.busiestLane(recap.busiest_lane) : '',
             color: C.text, big: false },
-          { label: 'ALERT TIME',
+          { label: tr.alertTime,
             value: recap?.alert_minutes != null ? `${recap.alert_minutes}` : '—',
-            suffix: 'min',
+            suffix: tr.min,
             color: recap?.alert_minutes > 0 ? C.red : C.text, big: false },
         ].map((item, i, arr) => (
           <View key={item.label}>
@@ -703,7 +813,7 @@ function TodayScreen() {
       {/* Equipment Mix */}
       <View style={[s.sectionRow, { marginTop: 8 }]}>
         <View style={[s.sectionDot, { backgroundColor: C.purple }]} />
-        <Text style={s.sectionLabel}>EQUIPMENT MIX</Text>
+        <Text style={s.sectionLabel}>{tr.equipmentMix}</Text>
       </View>
 
       <View style={[s.equipCard, { borderColor: C.border }]}>
@@ -717,27 +827,27 @@ function TodayScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <View style={s.equipLabelRow}>
-                  <Text style={s.equipLabel}>{eq.label}</Text>
+                  <Text style={s.equipLabel}>{tr.equipLabel[eq.type] || eq.label}</Text>
                   <Text style={[s.equipPct, { color: eq.color }]}>{eq.percent}%</Text>
                 </View>
                 <View style={s.equipBarBg}>
                   <View style={[s.equipBarFg, { width: `${eq.percent}%`, backgroundColor: eq.color }]} />
                 </View>
-                <Text style={s.equipCount}>{eq.count.toLocaleString()} customers</Text>
+                <Text style={s.equipCount}>{tr.customers(eq.count.toLocaleString())}</Text>
               </View>
             </View>
             {i < arr.length - 1 && <View style={[s.divider, { backgroundColor: C.border }]} />}
           </View>
         ))}
         {equipment.length === 0 && (
-          <Text style={[s.emptyText, { color: C.textDim }]}>No equipment data yet today</Text>
+          <Text style={[s.emptyText, { color: C.textDim }]}>{tr.noEquipData}</Text>
         )}
       </View>
 
       {/* Customer Demographics */}
       <View style={[s.sectionRow, { marginTop: 8 }]}>
         <View style={[s.sectionDot, { backgroundColor: C.accent }]} />
-        <Text style={s.sectionLabel}>CUSTOMER DEMOGRAPHICS</Text>
+        <Text style={s.sectionLabel}>{tr.demographics}</Text>
       </View>
 
       <View style={[s.demoCard, { borderColor: C.border }]}>
@@ -773,7 +883,7 @@ function TodayScreen() {
           <>
             <View style={[s.divider, { backgroundColor: C.border, marginVertical: 10 }]} />
             {/* Age Groups */}
-            <Text style={s.demoSubTitle}>AGE GROUPS</Text>
+            <Text style={s.demoSubTitle}>{tr.ageGroups}</Text>
             <View style={s.ageRow}>
               {demographicsAge.map(ag => (
                 <View key={ag.group} style={s.ageCard}>
@@ -795,8 +905,8 @@ function TodayScreen() {
         <>
           <View style={[s.sectionRow, { marginTop: 8 }]}>
             <View style={[s.sectionDot, { backgroundColor: C.blue }]} />
-            <Text style={s.sectionLabel}>ENTRIES BY HOUR</Text>
-            <Text style={s.sectionRight}>traffic pattern</Text>
+            <Text style={s.sectionLabel}>{tr.entriesByHour}</Text>
+            <Text style={s.sectionRight}>{tr.trafficPattern}</Text>
           </View>
           <View style={[s.chartCard, { borderColor: C.border }]}>
             <VictoryChart
@@ -878,6 +988,11 @@ const s = StyleSheet.create({
                     backgroundColor: '#1a2e22', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   liveDot:        { width: 6, height: 6, borderRadius: 3, backgroundColor: C.green },
   liveText:       { color: C.green, fontSize: 12, fontWeight: '700' },
+  langToggle:     { flexDirection: 'row', backgroundColor: C.surface2, borderRadius: 16,
+                    borderWidth: 1, borderColor: C.border, overflow: 'hidden' },
+  langBtn:        { paddingHorizontal: 8, paddingVertical: 4 },
+  langBtnActive:  { backgroundColor: C.border },
+  langFlag:       { fontSize: 16 },
 
   // Tab bar
   tabBar:         { flexDirection: 'row', backgroundColor: C.surface,
