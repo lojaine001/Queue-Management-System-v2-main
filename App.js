@@ -237,7 +237,7 @@ export default function App() {
             {['en', 'fr'].map(l => (
               <TouchableOpacity key={l} onPress={() => setLang(l)} activeOpacity={0.75}
                 style={[s.langBtn, lang === l && s.langBtnActive]}>
-                <Text style={s.langFlag}>{l === 'en' ? '🇬🇧' : '🇫🇷'}</Text>
+                <Text style={[s.langFlag, lang === l && s.langFlagActive]}>{l === 'en' ? 'EN' : 'FR'}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -992,7 +992,8 @@ const s = StyleSheet.create({
                     borderWidth: 1, borderColor: C.border, overflow: 'hidden' },
   langBtn:        { paddingHorizontal: 8, paddingVertical: 4 },
   langBtnActive:  { backgroundColor: C.border },
-  langFlag:       { fontSize: 16 },
+  langFlag:       { fontSize: 11, fontWeight: '700', color: C.textSub, letterSpacing: 0.5 },
+  langFlagActive: { color: C.text },
 
   // Tab bar
   tabBar:         { flexDirection: 'row', backgroundColor: C.surface,
