@@ -453,8 +453,30 @@ function ForecastScreen() {
         </View>
       )}
 
-      {/* Status row: TREND / QUEUE NOW / DATA AGE */}
+      {/* Forecast Detail */}
       <View style={[s.sectionRow, { marginTop: 10 }]}>
+        <View style={[s.sectionDot, { backgroundColor: C.blue }]} />
+        <Text style={s.sectionLabel}>FORECAST DETAIL</Text>
+      </View>
+
+      <View style={s.detailRow}>
+        {[
+          { label: 'NEXT SLOT',  value: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: 'Current time window' },
+          { label: 'PEAK WAIT',  value: (() => { const all = [waitNow, wait5, wait10, wait15].filter(v => v != null); return all.length ? fmtMin(Math.max(...all)) : '—'; })(), sub: 'Highest in 15 min', color: waitColor(Math.max(...[waitNow, wait5, wait10, wait15].filter(v => v != null))) },
+          { label: 'WINDOW END', value: new Date(Date.now() + 15 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: 'End of 15-min view' },
+        ].map(item => (
+          <View key={item.label} style={[s.detailCard, { borderColor: C.border }]}>
+            <Text style={s.detailLabel}>{item.label}</Text>
+            <Text style={[s.detailValue, item.color ? { color: item.color } : {}]} adjustsFontSizeToFit numberOfLines={1}>
+              {item.value}
+            </Text>
+            <Text style={s.detailSub}>{item.sub}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Status row: TREND / QUEUE NOW / DATA AGE */}
+      <View style={[s.sectionRow, { marginTop: 2 }]}>
         <View style={[s.sectionDot, { backgroundColor: C.blue }]} />
         <Text style={s.sectionLabel}>STATUS</Text>
       </View>
