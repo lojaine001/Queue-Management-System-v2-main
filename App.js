@@ -349,6 +349,8 @@ function ForecastScreen() {
   const wait10      = forecastData?.wait_10_min;
   const wait15      = forecastData?.wait_15_min;
   const activeLanes = forecastData?.current_lanes || 1;
+  const queueNow    = forecastData?.queue_now;
+  const updatedAt   = forecastData?.updated_at;
   const slots        = chartData?.slots   || [];
   const slots3h      = chartData3h?.slots || [];
   const activeSlots  = chartHorizon === '3h' ? slots3h : slots;
@@ -361,16 +363,49 @@ function ForecastScreen() {
     return C.green;
   };
 
-  // Forecast detail derived from existing data
-  const now = new Date();
-  const winEnd = new Date(now.getTime() + 15 * 60000);
-  const fmtTime = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const allWaits = [waitNow, wait5, wait10, wait15].filter(v => v != null);
-  const peakWait = allWaits.length ? Math.max(...allWaits) : null;
+  // Trend: compare now vs +15min
+  const trendDelta = (waitNow != null && wait15 != null) ? wait15 - waitNow : null;
+  const trend = trendDelta == null ? null : trendDelta > 1 ? 'rising' : trendDelta < -1 ? 'easing' : 'stable';
+  const trendLabel = { rising: '↑ Rising', stable: '→ Stable', easing: '↓ Easing' };
+  const trendColor = { rising: C.red, stable: C.yellow, easing: C.green };
+
+  // Data freshness
+  const dataAgeMin = updatedAt
+    ? Math.round((Date.now() - new Date(updatedAt).getTime()) / 60000)
+    : null;
+  const dataAgeLabel = dataAgeMin == null ? '—'
+    : dataAgeMin < 1 ? 'just now'
+    : `${dataAgeMin} min ago`;
+  const dataAgeColor = dataAgeMin == null ? C.textSub
+    : dataAgeMin > 5 ? C.red
+    : dataAgeMin > 2 ? C.yellow
+    : C.green;
+
+  // Action recommendation (client-side)
+  const currentWait = waitNow ?? 0;
+  const betterScenario = scenarios.find(sc => sc.lanes > activeLanes && sc.est_wait_min < currentWait - 1);
+  const worseScenario  = scenarios.find(sc => sc.lanes < activeLanes && sc.est_wait_min <= 5);
+  let recommendation = null;
+  let recommendationColor = C.textSub;
+  if (currentWait <= 5 && worseScenario) {
+    recommendation = `Queue is light — ${worseScenario.lanes} lane${worseScenario.lanes > 1 ? 's' : ''} would still keep wait under 5 min`;
+    recommendationColor = C.green;
+  } else if (currentWait > 5 && betterScenario) {
+    const saved = Math.round(currentWait - betterScenario.est_wait_min);
+    recommendation = `Open ${betterScenario.lanes - activeLanes} more lane${betterScenario.lanes - activeLanes > 1 ? 's' : ''} — saves ~${saved} min wait`;
+    recommendationColor = C.orange;
+  } else if (currentWait > 10) {
+    recommendation = 'High demand — all available lanes recommended';
+    recommendationColor = C.red;
+  } else if (currentWait <= 5) {
+    recommendation = 'Queue conditions are optimal';
+    recommendationColor = C.green;
+  }
 
   // Chart data
   const waitLine     = activeSlots.map((sl, i) => ({ x: i, y: sl.wait_min }));
   const arrivalsLine = activeSlots.map((sl, i) => ({ x: i, y: sl.arrivals }));
+  const alertLine    = activeSlots.map((_, i) => ({ x: i, y: 5 }));
   const chartW       = Dimensions.get('window').width - 28;
 
   return (
@@ -389,7 +424,7 @@ function ForecastScreen() {
         <Text style={s.sectionRight}></Text>
       </View>
 
-      {/* Wait cards NOW / +5 / +10 / +15 — fixed font scaling */}
+      {/* Wait cards NOW / +5 / +10 / +15 */}
       <View style={s.waitCardsRow}>
         {[
           { label: 'NOW',     value: waitNow },
@@ -411,22 +446,43 @@ function ForecastScreen() {
         ))}
       </View>
 
-      {/* Forecast Detail */}
+      {/* Recommendation banner */}
+      {recommendation && (
+        <View style={[s.recommendationBanner, { borderColor: recommendationColor + '55', backgroundColor: recommendationColor + '11' }]}>
+          <Text style={[s.recommendationText, { color: recommendationColor }]}>{recommendation}</Text>
+        </View>
+      )}
+
+      {/* Status row: TREND / QUEUE NOW / DATA AGE */}
       <View style={[s.sectionRow, { marginTop: 10 }]}>
         <View style={[s.sectionDot, { backgroundColor: C.blue }]} />
-        <Text style={s.sectionLabel}>FORECAST DETAIL</Text>
+        <Text style={s.sectionLabel}>STATUS</Text>
       </View>
 
       <View style={s.detailRow}>
         {[
-          { label: 'NEXT SLOT',        value: fmtTime(now),    sub: 'Current time window'   },
-          { label: 'PEAK WAIT',        value: peakWait != null ? fmtMin(peakWait) : '—', sub: 'Highest in 15 min', color: waitColor(peakWait) },
-          { label: 'WINDOW END',       value: fmtTime(winEnd), sub: 'End of 15-min view'    },
+          {
+            label: 'TREND',
+            value: trend ? trendLabel[trend] : '—',
+            sub:   'Wait over 15 min',
+            color: trend ? trendColor[trend] : C.textSub,
+          },
+          {
+            label: 'IN QUEUE',
+            value: queueNow != null ? `${queueNow}` : '—',
+            sub:   'People right now',
+            color: C.text,
+          },
+          {
+            label: 'DATA AGE',
+            value: dataAgeLabel,
+            sub:   'Last dashboard update',
+            color: dataAgeColor,
+          },
         ].map(item => (
           <View key={item.label} style={[s.detailCard, { borderColor: C.border }]}>
             <Text style={s.detailLabel}>{item.label}</Text>
-            <Text style={[s.detailValue, item.color ? { color: item.color } : {}]}
-              adjustsFontSizeToFit numberOfLines={1}>
+            <Text style={[s.detailValue, { color: item.color }]} adjustsFontSizeToFit numberOfLines={1}>
               {item.value}
             </Text>
             <Text style={s.detailSub}>{item.sub}</Text>
@@ -459,6 +515,8 @@ function ForecastScreen() {
               <Text style={s.legendTxt}>Wait</Text>
               <View style={[s.legendDot, { backgroundColor: C.blue, marginLeft: 8 }]} />
               <Text style={s.legendTxt}>Arrivals</Text>
+              <View style={[s.legendDot, { backgroundColor: C.red, marginLeft: 8 }]} />
+              <Text style={s.legendTxt}>Alert</Text>
             </View>
           </View>
 
@@ -490,6 +548,10 @@ function ForecastScreen() {
                 data={arrivalsLine}
                 style={{ data: { fill: C.blue + '22', stroke: C.blue, strokeWidth: 1.5 } }}
                 interpolation="monotoneX"
+              />
+              <VictoryLine
+                data={alertLine}
+                style={{ data: { stroke: C.red, strokeWidth: 1, strokeDasharray: '6' } }}
               />
               <VictoryLine
                 data={waitLine}
@@ -866,6 +928,8 @@ const s = StyleSheet.create({
   waitCardUnit:   { fontSize: 10, color: C.textDim, marginTop: 2 },
 
   // Forecast detail cards
+  recommendationBanner: { borderRadius: 10, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 12 },
+  recommendationText:   { fontSize: 12, fontWeight: '600', lineHeight: 17 },
   detailRow:      { flexDirection: 'row', gap: 8, marginBottom: 14 },
   detailCard:     { flex: 1, backgroundColor: C.surface, borderRadius: 12, padding: 10,
                     borderWidth: 1, alignItems: 'flex-start' },
