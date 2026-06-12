@@ -109,7 +109,7 @@ function closedBannerText() {
 
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function App() {
-  const [tab, setTab] = useState('live');
+  const [tab, setTab] = useState('forecast');
   const [time, setTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   const [storeOpen, setStoreOpen] = useState(isStoreOpen());
   const [closedText, setClosedText] = useState(closedBannerText());
