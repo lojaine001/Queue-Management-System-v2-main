@@ -738,10 +738,12 @@ function ForecastScreen({ lang }) {
       </View>
 
       <View style={[s.scenariosCard, { borderColor: C.border }]}>
-        {scenarios.map(sc => {
+        {(() => {
+          const maxScenarioWait = Math.max(...scenarios.map(sc => sc.est_wait_min || 0), 1);
+          return scenarios.map(sc => {
           const isActive = sc.lanes === activeLanes;
           const color = SCENARIO_COLOR[sc.color] || C.textSub;
-          const barWidth = sc.est_wait_min > 0 ? Math.min((sc.est_wait_min / 15) * 100, 100) : 5;
+          const barWidth = sc.est_wait_min > 0 ? Math.min((sc.est_wait_min / maxScenarioWait) * 100, 100) : 5;
           return (
             <TouchableOpacity
               key={sc.lanes}
@@ -772,7 +774,8 @@ function ForecastScreen({ lang }) {
               </View>
             </TouchableOpacity>
           );
-        })}
+        });
+        })()}
       </View>
 
       <View style={s.spacer} />
