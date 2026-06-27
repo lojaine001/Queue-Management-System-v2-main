@@ -120,6 +120,7 @@ const T = {
     dataAge: 'DATA AGE', lastDashboardUpdate: 'Last dashboard update',
     justNow: 'just now', minAgo: n => `${n} min ago`,
     outlook60min: '60-MIN OUTLOOK', outlook3h: '3-HOUR OUTLOOK',
+    outlook12h: '12-HOUR OUTLOOK', outlook2d: '2-DAY HISTORY',
     waitLegend: 'Wait', arrivalsLegend: 'Arrivals', alertLegend: 'Alert',
     laneScenarios: 'LANE SCENARIOS', tapToSetLanes: 'tap to set open lanes',
     laneLabel: n => `${n} lane${n > 1 ? 's' : ''}`, openBadge: 'OPEN',
@@ -168,6 +169,7 @@ const T = {
     dataAge: 'ÂGE DONNÉES', lastDashboardUpdate: 'Dernière mise à jour',
     justNow: "à l'instant", minAgo: n => `il y a ${n} min`,
     outlook60min: 'PRÉVISION 60 MIN', outlook3h: 'PRÉVISION 3H',
+    outlook12h: 'PRÉVISION 12H', outlook2d: 'HISTORIQUE 2J',
     waitLegend: 'Attente', arrivalsLegend: 'Arrivées', alertLegend: 'Alerte',
     laneScenarios: 'SCÉNARIOS FILES', tapToSetLanes: 'toucher pour définir',
     laneLabel: n => `${n} file${n > 1 ? 's' : ''}`, openBadge: 'OUVERT',
@@ -461,12 +463,14 @@ function ForecastScreen({ lang }) {
     `${API_URL}/forecast`,
     `${API_URL}/forecast-chart`,
     `${API_URL}/forecast-chart-3h`,
+    `${API_URL}/forecast-chart-12h`,
+    `${API_URL}/forecast-chart-2d`,
   ]);
   const { data: snapData } = useApi([
     `${API_URL}/snapshot/checkout`,
     `${API_URL}/snapshot/entrance`,
   ], 60000);
-  const [forecastData, chartData, chartData3h] = data;
+  const [forecastData, chartData, chartData3h, chartData12h, chartData2d] = data;
   const camThumbH = Math.round((Dimensions.get('window').width - 28 - 10) / 2 * 3 / 4 * 0.55);
 
   if (loading) return <Loader />;
@@ -479,9 +483,14 @@ function ForecastScreen({ lang }) {
   const activeLanes = forecastData?.current_lanes || 1;
   const queueNow    = forecastData?.queue_now;
   const updatedAt   = forecastData?.updated_at;
-  const slots        = chartData?.slots   || [];
-  const slots3h      = chartData3h?.slots || [];
-  const activeSlots  = chartHorizon === '3h' ? slots3h : slots;
+  const slots        = chartData?.slots    || [];
+  const slots3h      = chartData3h?.slots  || [];
+  const slots12h     = chartData12h?.slots || [];
+  const slots2d      = chartData2d?.slots  || [];
+  const activeSlots  = chartHorizon === '3h' ? slots3h
+                     : chartHorizon === '12h' ? slots12h
+                     : chartHorizon === '2d'  ? slots2d
+                     : slots;
 
   const waitColor = (w) => {
     if (w == null) return C.textSub;
@@ -662,17 +671,27 @@ function ForecastScreen({ lang }) {
         <>
           <View style={[s.sectionRow, { marginTop: 10 }]}>
             <View style={[s.sectionDot, { backgroundColor: C.accent }]} />
-            <Text style={s.sectionLabel}>{chartHorizon === '3h' ? tr.outlook3h : tr.outlook60min}</Text>
+            <Text style={s.sectionLabel}>
+              {chartHorizon === '3h'  ? tr.outlook3h
+               : chartHorizon === '12h' ? tr.outlook12h
+               : chartHorizon === '2d'  ? tr.outlook2d
+               : tr.outlook60min}
+            </Text>
             <View style={s.horizonToggle}>
-              {['60min', '3h'].map(h => (
+              {[
+                { key: '60min', label: '60m' },
+                { key: '3h',   label: '3h'  },
+                { key: '12h',  label: '12h' },
+                { key: '2d',   label: '2d'  },
+              ].map(h => (
                 <TouchableOpacity
-                  key={h}
-                  style={[s.horizonBtn, chartHorizon === h && s.horizonBtnActive]}
-                  onPress={() => setChartHorizon(h)}
+                  key={h.key}
+                  style={[s.horizonBtn, chartHorizon === h.key && s.horizonBtnActive]}
+                  onPress={() => setChartHorizon(h.key)}
                   activeOpacity={0.8}
                 >
-                  <Text style={[s.horizonBtnText, chartHorizon === h && s.horizonBtnTextActive]}>
-                    {h === '60min' ? '60m' : '3h'}
+                  <Text style={[s.horizonBtnText, chartHorizon === h.key && s.horizonBtnTextActive]}>
+                    {h.label}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -695,7 +714,7 @@ function ForecastScreen({ lang }) {
               theme={VictoryTheme.material}
             >
               <VictoryAxis
-                tickCount={5}
+                tickCount={chartHorizon === '2d' ? 8 : chartHorizon === '12h' ? 6 : 5}
                 tickFormat={(i) => activeSlots[Math.round(i)]?.time ?? ''}
                 style={{
                   axis: { stroke: C.border },
