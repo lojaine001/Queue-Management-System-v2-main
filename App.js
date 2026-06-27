@@ -132,6 +132,9 @@ const T = {
     customers: n => `${n} customers`, noEquipData: 'No equipment data yet today',
     demographics: 'CUSTOMER DEMOGRAPHICS', ageGroups: 'AGE GROUPS',
     entriesByHour: 'ENTRIES BY HOUR', trafficPattern: 'traffic pattern',
+    gender: 'GENDER', female: 'Female', male: 'Male',
+    visitors: 'visitors', noGenderData: 'No gender data yet today',
+    analyzedOf: (n, total) => `based on ${n} of ${total} analyzed`,
   },
   fr: {
     storeName: 'Gestion File',
@@ -177,6 +180,9 @@ const T = {
     customers: n => `${n} clients`, noEquipData: "Aucune donnée d'équipement aujourd'hui",
     demographics: 'DÉMOGRAPHIE CLIENTS', ageGroups: "TRANCHES D'ÂGE",
     entriesByHour: 'ENTRÉES PAR HEURE', trafficPattern: 'flux de trafic',
+    gender: 'GENRE', female: 'Femme', male: 'Homme',
+    visitors: 'visiteurs', noGenderData: "Pas de données de genre aujourd'hui",
+    analyzedOf: (n, total) => `basé sur ${n} des ${total} analysés`,
   },
 };
 
@@ -300,6 +306,7 @@ function LiveScreen({ lang }) {
   const snapshot = lanesData?.snapshot || {};
   const alert    = alertData;
   const alertS   = alert?.level ? ALERT_STYLE[alert.level] : null;
+  const allLanesOpen = lanes.length > 0 && lanes.every(l => ['open', 'busy', 'busy_high'].includes(l.status));
 
   const sendResponse = async (response) => {
     try {
@@ -329,14 +336,21 @@ function LiveScreen({ lang }) {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[s.alertBannerTitle, { color: alertS.color }]}>{alert.message}</Text>
+              {allLanesOpen && (
+                <Text style={[s.alertAllOpenNote, { color: alertS.color }]}>
+                  {lang === 'fr' ? 'Toutes les files sont déjà ouvertes' : 'All lanes already open — monitoring'}
+                </Text>
+              )}
             </View>
-            <TouchableOpacity
-              style={[s.openBtn, { backgroundColor: alertS.border }]}
-              onPress={() => sendResponse('opening_lane')}
-              activeOpacity={0.8}
-            >
-              <Text style={s.openBtnText}>{tr.openBtn}</Text>
-            </TouchableOpacity>
+            {!allLanesOpen && (
+              <TouchableOpacity
+                style={[s.openBtn, { backgroundColor: alertS.border }]}
+                onPress={() => sendResponse('opening_lane')}
+                activeOpacity={0.8}
+              >
+                <Text style={s.openBtnText}>{tr.openBtn}</Text>
+              </TouchableOpacity>
+            )}
           </View>
           <View style={s.alertBtnRow}>
             {[
@@ -448,7 +462,12 @@ function ForecastScreen({ lang }) {
     `${API_URL}/forecast-chart`,
     `${API_URL}/forecast-chart-3h`,
   ]);
+  const { data: snapData } = useApi([
+    `${API_URL}/snapshot/checkout`,
+    `${API_URL}/snapshot/entrance`,
+  ], 60000);
   const [forecastData, chartData, chartData3h] = data;
+  const camThumbH = Math.round((Dimensions.get('window').width - 28 - 10) / 2 * 3 / 4 * 0.55);
 
   if (loading) return <Loader />;
 
@@ -525,6 +544,23 @@ function ForecastScreen({ lang }) {
       showsVerticalScrollIndicator={false}
     >
       {error && <ErrorBanner msg={error} />}
+
+      {/* Compact camera preview */}
+      {(snapData?.[0]?.image || snapData?.[1]?.image) && (
+        <View style={s.cameraRow}>
+          {[
+            { label: tr.checkout, img: snapData?.[0]?.image },
+            { label: tr.entrance, img: snapData?.[1]?.image },
+          ].map(cam => (
+            <View key={cam.label} style={[s.cameraCard, { borderColor: C.border }]}>
+              <Text style={s.cameraLabel}>{cam.label}</Text>
+              {cam.img
+                ? <Image source={{ uri: cam.img }} style={[s.cameraImage, { height: camThumbH }]} resizeMode="contain" />
+                : <View style={[s.cameraImage, { height: camThumbH }]} />}
+            </View>
+          ))}
+        </View>
+      )}
 
       {/* Forecast header */}
       <View style={s.sectionRow}>
@@ -853,31 +889,42 @@ function TodayScreen({ lang }) {
       <View style={[s.demoCard, { borderColor: C.border }]}>
 
         {/* Gender donut */}
-        <Text style={s.demoSubTitle}>GENDER</Text>
-        {demographicsGender.length > 0 ? (
-          <View style={s.genderRow}>
-            <VictoryPie
-              data={demographicsGender.map(g => ({ x: g.label, y: g.count }))}
-              colorScale={demographicsGender.map(g => g.color)}
-              width={160} height={160}
-              innerRadius={50}
-              padding={10}
-              labels={() => null}
-            />
-            <View style={s.genderLegend}>
-              {demographicsGender.map(g => (
-                <View key={g.key} style={s.genderLegendRow}>
-                  <View style={[s.genderDot, { backgroundColor: g.color }]} />
-                  <View>
-                    <Text style={[s.genderPct, { color: g.color }]}>{g.percent}%</Text>
-                    <Text style={s.genderLbl}>{g.label}</Text>
-                    <Text style={s.genderCount}>{g.count.toLocaleString()} visitors</Text>
-                  </View>
+        <Text style={s.demoSubTitle}>{tr.gender}</Text>
+        {demographicsGender.length > 0 ? (() => {
+          const analyzedTotal = demographicsGender.reduce((sum, g) => sum + g.count, 0);
+          const genderLabel = { Female: tr.female, Male: tr.male };
+          return (
+            <>
+              {recap?.total_customers > 0 && (
+                <Text style={[s.demoSampleNote, { color: C.textDim }]}>
+                  {tr.analyzedOf(analyzedTotal.toLocaleString(), recap.total_customers.toLocaleString())}
+                </Text>
+              )}
+              <View style={s.genderRow}>
+                <VictoryPie
+                  data={demographicsGender.map(g => ({ x: g.label, y: g.count }))}
+                  colorScale={demographicsGender.map(g => g.color)}
+                  width={160} height={160}
+                  innerRadius={50}
+                  padding={10}
+                  labels={() => null}
+                />
+                <View style={s.genderLegend}>
+                  {demographicsGender.map(g => (
+                    <View key={g.key} style={s.genderLegendRow}>
+                      <View style={[s.genderDot, { backgroundColor: g.color }]} />
+                      <View>
+                        <Text style={[s.genderPct, { color: g.color }]}>{g.percent}%</Text>
+                        <Text style={s.genderLbl}>{genderLabel[g.label] || g.label}</Text>
+                        <Text style={s.genderCount}>{g.count.toLocaleString()} {tr.visitors}</Text>
+                      </View>
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
-          </View>
-        ) : <Text style={[s.emptyText, { color: C.textDim }]}>No gender data yet today</Text>}
+              </View>
+            </>
+          );
+        })() : <Text style={[s.emptyText, { color: C.textDim }]}>{tr.noGenderData}</Text>}
 
         {demographicsAge.length > 0 && (
           <>
@@ -1026,6 +1073,7 @@ const s = StyleSheet.create({
   alertBannerTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   alertIconBox:   { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
   alertBannerTitle: { fontSize: 13, fontWeight: '600', color: C.text, flex: 1 },
+  alertAllOpenNote: { fontSize: 11, marginTop: 3, opacity: 0.8 },
   openBtn:        { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 },
   openBtnText:    { color: '#fff', fontSize: 12, fontWeight: '800' },
   alertBtnRow:    { flexDirection: 'row', gap: 8, marginTop: 10 },
@@ -1149,7 +1197,8 @@ const s = StyleSheet.create({
   // Demographics
   demoCard:       { backgroundColor: C.surface, borderRadius: 12, borderWidth: 1,
                     overflow: 'hidden', marginBottom: 4, padding: 14 },
-  demoSubTitle:   { fontSize: 10, fontWeight: '700', color: C.textSub, letterSpacing: 1, marginBottom: 10 },
+  demoSubTitle:   { fontSize: 10, fontWeight: '700', color: C.textSub, letterSpacing: 1, marginBottom: 6 },
+  demoSampleNote: { fontSize: 10, color: C.textDim, marginBottom: 10 },
   demoRow:        { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 3 },
   demoRowLabel:   { fontSize: 13, fontWeight: '600', color: C.text, width: 70 },
   demoBarWrap:    { flex: 1, height: 6, backgroundColor: C.border, borderRadius: 3 },
