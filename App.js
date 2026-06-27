@@ -104,17 +104,17 @@ const T = {
     checkout: 'CHECKOUT', entrance: 'ENTRANCE',
     openBtn: 'OPEN', cannotOpen: 'Cannot Open', falseAlarm: 'False Alarm',
     // Forecast
-    forecast15min: '15-MIN FORECAST', nowLabel: 'NOW',
+    forecast15min: '10-MIN FORECAST', nowLabel: 'NOW',
     recOptimal: 'Queue conditions are optimal',
     recOpenMore: (n, saved) => `Open ${n} more lane${n > 1 ? 's' : ''} — saves ~${saved} min wait`,
     recHighDemand: 'High demand — all available lanes recommended',
     recLight: n => `Queue is light — ${n} lane${n > 1 ? 's' : ''} would still keep wait under 5 min`,
     forecastDetail: 'FORECAST DETAIL',
     nextSlot: 'NEXT SLOT', currentTimeWindow: 'Current time window',
-    peakWait: 'PEAK WAIT', highestIn15min: 'Highest in 15 min',
-    windowEnd: 'WINDOW END', endOf15min: 'End of 15-min view',
+    peakWait: 'PEAK WAIT', highestIn15min: 'Highest in 10 min',
+    windowEnd: 'WINDOW END', endOf15min: 'End of 10-min view',
     statusSection: 'STATUS',
-    trend: 'TREND', waitOver15min: 'Wait over 15 min',
+    trend: 'TREND', waitOver15min: 'Wait over 10 min',
     trendRising: '↑ Rising', trendStable: '→ Stable', trendEasing: '↓ Easing',
     inQueueLabel: 'IN QUEUE', peopleRightNow: 'People right now',
     dataAge: 'DATA AGE', lastDashboardUpdate: 'Last dashboard update',
@@ -153,17 +153,17 @@ const T = {
     checkout: 'CAISSE', entrance: 'ENTRÉE',
     openBtn: 'OUVRIR', cannotOpen: "Impossible d'ouvrir", falseAlarm: 'Fausse alarme',
     // Forecast
-    forecast15min: 'PRÉVISION 15 MIN', nowLabel: 'MAINTENANT',
+    forecast15min: 'PRÉVISION 10 MIN', nowLabel: 'MAINTENANT',
     recOptimal: 'Conditions de file optimales',
     recOpenMore: (n, saved) => `Ouvrir ${n} file${n > 1 ? 's' : ''} de plus — économise ~${saved} min`,
     recHighDemand: 'Forte demande — toutes les files disponibles recommandées',
     recLight: n => `File légère — ${n} file${n > 1 ? 's' : ''} suffit pour maintenir sous 5 min`,
     forecastDetail: 'DÉTAIL PRÉVISION',
     nextSlot: 'PROCHAIN CRÉNEAU', currentTimeWindow: 'Fenêtre de temps actuelle',
-    peakWait: 'ATTENTE MAX', highestIn15min: 'Plus haute en 15 min',
-    windowEnd: 'FIN DE FENÊTRE', endOf15min: 'Fin de la vue 15 min',
+    peakWait: 'ATTENTE MAX', highestIn15min: 'Plus haute en 10 min',
+    windowEnd: 'FIN DE FENÊTRE', endOf15min: 'Fin de la vue 10 min',
     statusSection: 'STATUT',
-    trend: 'TENDANCE', waitOver15min: 'Attente sur 15 min',
+    trend: 'TENDANCE', waitOver15min: 'Attente sur 10 min',
     trendRising: '↑ En hausse', trendStable: '→ Stable', trendEasing: '↓ En baisse',
     inQueueLabel: 'EN FILE', peopleRightNow: 'Personnes actuellement',
     dataAge: 'ÂGE DONNÉES', lastDashboardUpdate: 'Dernière mise à jour',
@@ -497,8 +497,8 @@ function ForecastScreen({ lang }) {
     return C.green;
   };
 
-  // Trend: compare now vs +15min
-  const trendDelta = (waitNow != null && wait15 != null) ? wait15 - waitNow : null;
+  // Trend: compare now vs +10min
+  const trendDelta = (waitNow != null && wait10 != null) ? wait10 - waitNow : null;
   const trend = trendDelta == null ? null : trendDelta > 1 ? 'rising' : trendDelta < -1 ? 'easing' : 'stable';
   const trendLabel = { rising: tr.trendRising, stable: tr.trendStable, easing: tr.trendEasing };
   const trendColor = { rising: C.red, stable: C.yellow, easing: C.green };
@@ -614,7 +614,7 @@ function ForecastScreen({ lang }) {
         {[
           { label: tr.nextSlot,  value: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: tr.currentTimeWindow },
           { label: tr.peakWait,  value: (() => { const all = [waitNow, wait5, wait10, wait15].filter(v => v != null); return all.length ? fmtMin(Math.max(...all)) : '—'; })(), sub: tr.highestIn15min, color: waitColor(Math.max(...[waitNow, wait5, wait10, wait15].filter(v => v != null))) },
-          { label: tr.windowEnd, value: new Date(Date.now() + 15 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: tr.endOf15min },
+          { label: tr.windowEnd, value: new Date(Date.now() + 10 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: tr.endOf15min },
         ].map(item => (
           <View key={item.label} style={[s.detailCard, { borderColor: C.border }]}>
             <Text style={s.detailLabel}>{item.label}</Text>
