@@ -299,7 +299,7 @@ function LiveScreen({ lang }) {
     `${API_URL}/snapshot/checkout`,
     `${API_URL}/snapshot/entrance`,
   ], 60000);
-  const camImgH = Math.round((Dimensions.get('window').width - 28 - 10) / 2 * 3 / 4);
+  const camThumbH = Math.round((Dimensions.get('window').width - 28 - 10) / 2 * 3 / 4 * 0.55);
   const [lanesData, alertData] = data;
 
   if (loading) return <Loader />;
@@ -328,6 +328,23 @@ function LiveScreen({ lang }) {
       showsVerticalScrollIndicator={false}
     >
       {error && <ErrorBanner msg={error} />}
+
+      {/* Compact camera preview */}
+      {(snapData?.[0]?.image || snapData?.[1]?.image) && (
+        <View style={s.cameraRow}>
+          {[
+            { label: tr.checkout, img: snapData?.[0]?.image },
+            { label: tr.entrance, img: snapData?.[1]?.image },
+          ].map(cam => (
+            <View key={cam.label} style={[s.cameraCard, { borderColor: C.border }]}>
+              <Text style={s.cameraLabel}>{cam.label}</Text>
+              {cam.img
+                ? <Image source={{ uri: cam.img }} style={[s.cameraImage, { height: camThumbH }]} resizeMode="contain" />
+                : <View style={[s.cameraImage, { height: camThumbH }]} />}
+            </View>
+          ))}
+        </View>
+      )}
 
       {/* Alert Banner */}
       {alert?.level && alertS && (
@@ -428,26 +445,6 @@ function LiveScreen({ lang }) {
           <Text style={s.snapshotLbl}>{tr.avgWait}</Text>
           <Text style={s.snapshotSub}>{tr.min}</Text>
         </View>
-      </View>
-
-      {/* Camera snapshots */}
-      <View style={[s.sectionRow, { marginTop: 8 }]}>
-        <View style={[s.sectionDot, { backgroundColor: C.textDim }]} />
-        <Text style={s.sectionLabel}>{tr.liveCameras}</Text>
-        <Text style={s.sectionRight}>{tr.updatesEvery60s}</Text>
-      </View>
-      <View style={s.cameraRow}>
-        {[
-          { label: tr.checkout, img: snapData?.[0]?.image },
-          { label: tr.entrance, img: snapData?.[1]?.image },
-        ].map(cam => (
-          <View key={cam.label} style={[s.cameraCard, { borderColor: C.border }]}>
-            <Text style={s.cameraLabel}>{cam.label}</Text>
-            {cam.img
-              ? <Image source={{ uri: cam.img }} style={[s.cameraImage, { height: camImgH }]} resizeMode="contain" />
-              : <View style={[s.cameraImage, { height: camImgH }]} />}
-          </View>
-        ))}
       </View>
 
       <View style={s.spacer} />
