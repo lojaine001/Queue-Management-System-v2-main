@@ -298,7 +298,7 @@ function LiveScreen({ lang }) {
   const { data: snapData } = useApi([
     `${API_URL}/snapshot/checkout`,
     `${API_URL}/snapshot/entrance`,
-  ], 60000);
+  ], 5000);
   const camThumbH = Math.round((Dimensions.get('window').width - 28 - 10) / 2 * 3 / 4 * 0.55);
   const [lanesData, alertData] = data;
 
