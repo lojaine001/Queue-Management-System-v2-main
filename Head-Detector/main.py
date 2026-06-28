@@ -57,7 +57,7 @@ import time
 import numpy as np
 
 LIVE_SNAP_DIR = Path(__file__).resolve().parent.parent / "Queue-Management-System-v2-main" / "Queue-Management-System-v2-main" / "snapshots"
-LIVE_SNAP_INTERVAL = 60.0
+LIVE_SNAP_INTERVAL = 5.0
 import requests
 import argparse
 from datetime import datetime
