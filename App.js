@@ -466,7 +466,7 @@ function ForecastScreen({ lang }) {
   const { data: snapData } = useApi([
     `${API_URL}/snapshot/checkout`,
     `${API_URL}/snapshot/entrance`,
-  ], 60000);
+  ], 5000);
   const [forecastData, chartData, chartData3h, chartData12h, chartData2d] = data;
   const camThumbH = Math.round((Dimensions.get('window').width - 28 - 10) / 2 * 3 / 4 * 0.55);
 
