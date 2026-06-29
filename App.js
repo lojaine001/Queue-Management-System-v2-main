@@ -6,7 +6,7 @@ import {
 import { VictoryChart, VictoryLine, VictoryAxis, VictoryArea, VictoryTheme, VictoryPie, VictoryBar } from 'victory-native';
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const API_URL = 'https://wildfowl-agenda-curve.ngrok-free.dev';
+const API_URL = 'https://qualifying-nvidia-employed-motels.trycloudflare.com';
 const REFRESH_MS = 15000;
 const H = { 'ngrok-skip-browser-warning': '1' };
 
