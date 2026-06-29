@@ -121,7 +121,7 @@ const T = {
     justNow: 'just now', minAgo: n => `${n} min ago`,
     outlook60min: '60-MIN OUTLOOK', outlook3h: '3-HOUR OUTLOOK',
     outlook12h: '12-HOUR OUTLOOK', outlook2d: '2-DAY HISTORY',
-    waitLegend: 'Wait', arrivalsLegend: 'Arrivals', alertLegend: 'Alert',
+    waitLegend: 'Wait', arrivalsLegend: 'Arrivals', alertLegend: 'Alert', entriesLegend: 'Entries',
     laneScenarios: 'LANE SCENARIOS', tapToSetLanes: 'tap to set open lanes',
     laneLabel: n => `${n} lane${n > 1 ? 's' : ''}`, openBadge: 'OPEN',
     // Today
@@ -170,7 +170,7 @@ const T = {
     justNow: "à l'instant", minAgo: n => `il y a ${n} min`,
     outlook60min: 'PRÉVISION 60 MIN', outlook3h: 'PRÉVISION 3H',
     outlook12h: 'PRÉVISION 12H', outlook2d: 'HISTORIQUE 2J',
-    waitLegend: 'Attente', arrivalsLegend: 'Arrivées', alertLegend: 'Alerte',
+    waitLegend: 'Attente', arrivalsLegend: 'Arrivées', alertLegend: 'Alerte', entriesLegend: 'Entrées',
     laneScenarios: 'SCÉNARIOS FILES', tapToSetLanes: 'toucher pour définir',
     laneLabel: n => `${n} file${n > 1 ? 's' : ''}`, openBadge: 'OUVERT',
     // Today
@@ -537,8 +537,9 @@ function ForecastScreen({ lang }) {
   }
 
   // Chart data
-  const waitLine     = activeSlots.map((sl, i) => ({ x: i, y: sl.wait_min }));
-  const arrivalsLine = activeSlots.map((sl, i) => ({ x: i, y: sl.arrivals }));
+  const isEntriesView = chartHorizon === '12h' || chartHorizon === '2d';
+  const waitLine     = activeSlots.map((sl, i) => ({ x: i, y: sl.wait_min ?? 0 }));
+  const arrivalsLine = activeSlots.map((sl, i) => ({ x: i, y: isEntriesView ? (sl.entries ?? 0) : (sl.arrivals ?? 0) }));
   const alertLine    = activeSlots.map((_, i) => ({ x: i, y: 5 }));
   const chartW       = Dimensions.get('window').width - 28;
 
@@ -694,12 +695,21 @@ function ForecastScreen({ lang }) {
               ))}
             </View>
             <View style={[s.chartLegend, { marginLeft: 8 }]}>
-              <View style={[s.legendDot, { backgroundColor: C.orange }]} />
-              <Text style={s.legendTxt}>{tr.waitLegend}</Text>
-              <View style={[s.legendDot, { backgroundColor: C.blue, marginLeft: 8 }]} />
-              <Text style={s.legendTxt}>{tr.arrivalsLegend}</Text>
-              <View style={[s.legendDot, { backgroundColor: C.red, marginLeft: 8 }]} />
-              <Text style={s.legendTxt}>{tr.alertLegend}</Text>
+              {isEntriesView ? (
+                <>
+                  <View style={[s.legendDot, { backgroundColor: C.blue }]} />
+                  <Text style={s.legendTxt}>{tr.entriesLegend}</Text>
+                </>
+              ) : (
+                <>
+                  <View style={[s.legendDot, { backgroundColor: C.orange }]} />
+                  <Text style={s.legendTxt}>{tr.waitLegend}</Text>
+                  <View style={[s.legendDot, { backgroundColor: C.blue, marginLeft: 8 }]} />
+                  <Text style={s.legendTxt}>{tr.arrivalsLegend}</Text>
+                  <View style={[s.legendDot, { backgroundColor: C.red, marginLeft: 8 }]} />
+                  <Text style={s.legendTxt}>{tr.alertLegend}</Text>
+                </>
+              )}
             </View>
           </View>
 
@@ -732,15 +742,19 @@ function ForecastScreen({ lang }) {
                 style={{ data: { fill: C.blue + '22', stroke: C.blue, strokeWidth: 1.5 } }}
                 interpolation="monotoneX"
               />
-              <VictoryLine
-                data={alertLine}
-                style={{ data: { stroke: C.red, strokeWidth: 1, strokeDasharray: '6' } }}
-              />
-              <VictoryLine
-                data={waitLine}
-                style={{ data: { stroke: C.orange, strokeWidth: 2 } }}
-                interpolation="monotoneX"
-              />
+              {!isEntriesView && (
+                <VictoryLine
+                  data={alertLine}
+                  style={{ data: { stroke: C.red, strokeWidth: 1, strokeDasharray: '6' } }}
+                />
+              )}
+              {!isEntriesView && (
+                <VictoryLine
+                  data={waitLine}
+                  style={{ data: { stroke: C.orange, strokeWidth: 2 } }}
+                  interpolation="monotoneX"
+                />
+              )}
             </VictoryChart>
           </View>
         </>
